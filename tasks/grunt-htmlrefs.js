@@ -14,11 +14,11 @@ module.exports = function (grunt) {
 
 	var path = require('path');
 
-	// start build pattern --> <!-- ref:[target] output -->
-	var regbuild = /<!--\s*ref:(\w+)\s*(.+)\s*-->/;
+	// start build pattern --> <!-- build:[target] output -->
+	var regbuild = /<!--\s*build:(\w+)\s*(.+)\s*-->/;
 
-	// end build pattern -- <!-- endref -->
-	var regend = /<!--\s*endref\s*-->/;
+	// end build pattern -- <!-- endbuild -->
+	var regend = /<!--\s*endbuild\s*-->/;
 
 	// <script> template
 	var scriptTemplate = '<script type="text/javascript" src="<%= dest %>"></script>';
@@ -27,8 +27,8 @@ module.exports = function (grunt) {
 	var stylesheetTemplate = '<link type="text/css" rel="stylesheet" href="<%= dest %>">';
 
 	// inlineCSS template
-	var inlineCSSTemplate = '<style><%= dest %></style>';
-
+	var inlineCSSTemplate = '<style><%= dest %></style>';	
+	
 	grunt.registerMultiTask('htmlrefs', "Replaces (or removes) references to non-optimized scripts or stylesheets on HTML files", function () {
 		var params = this.options();
 		var includes = (this.data.includes || {});
@@ -36,27 +36,25 @@ module.exports = function (grunt) {
 		var files = this.filesSrc;
 		var dest = this.files[0].dest;
 
-		files.map(grunt.file.read).forEach(function (content, i) {
-			content = content.toString(); // make sure it's a string and not buffer
-			var blocks = getBlocks(content);
+		this.files.forEach(function (filePair) {
 
-			var file = files[i];
+			var file = filePair.src.forEach(function (src) {
+                var content = grunt.file.read(src);
+                var blocks = getBlocks(content);
 
-			// Determine the linefeed from the content
-			var lf = /\r\n/g.test(content) ? '\r\n' : '\n';
+                // Determine the linefeed from the content
+                var lf = /\r\n/g.test(content) ? '\r\n' : '\n';
 
-			blocks.forEach(function (block) {
-				// Determine the indent from the content
-				var raw = block.raw.join(lf);
-				var options = _.extend({}, { pkg: pkg }, block, params);
+                blocks.forEach(function (block) {
+                    // Determine the indent from the content
+                    var raw = block.raw.join(lf);
+                    var options = _.extend({}, { pkg: pkg }, block, params);
 
-				var replacement = htmlrefsTemplate[block.type](options, lf, includes);
-				content = content.replace(raw, replacement);
-			});
-
-			// write the contents to destination
-			var filePath = dest ? path.join(dest, path.basename(file)) : file;
-			grunt.file.write(filePath, content);
+                    var replacement = htmlrefsTemplate[block.type](options, lf, includes);
+                    content = content.replace(raw, replacement);
+                });
+                grunt.file.write(filePair.dest, content);
+            });
 		});
 	});
 
@@ -71,9 +69,9 @@ module.exports = function (grunt) {
 			},
 			inlinecss : function (block) {
 				var indent = (block.raw[0].match(/^\s*/) || [])[0];
-				var lines = grunt.file.read(block.dest).replace(/\r\n/g, '\n').split(/\n/).map(function(l) {return indent + l});
+				var lines = grunt.file.read(block.dest).replace(/\r\n/g, '\n').split(/\n/).map(function(l) {return indent + l});			
 				return indent + grunt.template.process(inlineCSSTemplate, {data: {dest:lines}});
-			},
+			},					
 			include : function (block, lf, includes) {
 				// let's see if we have that include listed
 				if(!includes[block.dest]) return '';
