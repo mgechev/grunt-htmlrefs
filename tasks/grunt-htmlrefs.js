@@ -25,6 +25,9 @@ module.exports = function (grunt) {
 
     // inlineCSS template
     var inlineCSSTemplate = '<style><%= dest %></style>';    
+
+    // <script> template
+    var scriptTemplate;
     
     grunt.registerMultiTask('htmlrefs', "Replaces (or removes) references to non-optimized scripts or stylesheets on HTML files", function () {
         var params = this.options();
@@ -33,8 +36,8 @@ module.exports = function (grunt) {
         var files = this.filesSrc;
         var dest = this.files[0].dest;
         var async = (params.async) ? 'async' : '';
-        // <script> template
-        var scriptTemplate = '<script type="text/javascript" src="<%= dest %>" ' + async + '></script>';
+    
+        scriptTemplate = '<script type="text/javascript" src="<%= dest %>" ' + async + '></script>';
 
         this.files.forEach(function (filePair) {
 
