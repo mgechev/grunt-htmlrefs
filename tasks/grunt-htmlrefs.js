@@ -20,9 +20,6 @@ module.exports = function (grunt) {
     // end build pattern -- <!-- endbuild -->
     var regend = /<!--\s*endbuild\s*-->/;
 
-    // <script> template
-    var scriptTemplate = '<script type="text/javascript" src="<%= dest %>" async></script>';
-
     // stylesheet template
     var stylesheetTemplate = '<link type="text/css" rel="stylesheet" href="<%= dest %>">';
 
@@ -35,6 +32,9 @@ module.exports = function (grunt) {
         var pkg = (grunt.config.get('pkg') || {});
         var files = this.filesSrc;
         var dest = this.files[0].dest;
+        var async = (params.async) ? 'async' : '';
+        // <script> template
+        var scriptTemplate = '<script type="text/javascript" src="<%= dest %>" ' + async + '></script>';
 
         this.files.forEach(function (filePair) {
 
