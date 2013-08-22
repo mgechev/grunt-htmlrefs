@@ -21,7 +21,7 @@ module.exports = function (grunt) {
     var regend = /<!--\s*endbuild\s*-->/;
 
     // <script> template
-    var scriptTemplate = '<script type="text/javascript" src="<%= dest %>"></script>';
+    var scriptTemplate = '<script type="text/javascript" src="<%= dest %>" async></script>';
 
     // stylesheet template
     var stylesheetTemplate = '<link type="text/css" rel="stylesheet" href="<%= dest %>">';
